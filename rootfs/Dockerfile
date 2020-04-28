@@ -3,18 +3,18 @@ FROM ubuntu:18.04
 LABEL name="deis-go-dev" \
       maintainer="Matt Boersma <matt.boersma@microsoft.com>"
 
-ENV AZCLI_VERSION=2.0.79 \
+ENV AZCLI_VERSION=2.3.1 \
     DOCKER_VERSION=19.03.4 \
-    GO_VERSION=1.13.5 \
+    GO_VERSION=1.14.2 \
     GLIDE_VERSION=v0.13.3 \
     GLIDE_HOME=/root \
-    HELM_VERSION=v2.14.3 \
+    HELM_VERSION=v2.16.3 \
     KUBECTL_VERSION=v1.16.3 \
     ETCDCTL_VERSION=v3.1.8 \
-    GOLANGCI_LINT_VERSION=v1.22.2 \
+    GOLANGCI_LINT_VERSION=v1.24.0 \
     PROTOBUF_VERSION=3.7.0 \
     SHELLCHECK_VERSION=v0.7.0 \
-    SHFMT_VERSION=3.0.0 \
+    SHFMT_VERSION=3.1.0 \
     PATH=$PATH:/usr/local/go/bin:/go/bin:/usr/local/bin/docker \
     GOPATH=/go
 
@@ -47,10 +47,10 @@ RUN \
     netcat \
     openssh-client \
     procps \
-    python \
-    python-dev \
-    python-pip \
-    python-setuptools \
+    python3 \
+    python3-dev \
+    python3-pip \
+    python3-setuptools \
     rsync \
     ruby \
     unzip \
@@ -105,11 +105,10 @@ RUN \
   && curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b ${GOPATH}/bin ${GOLANGCI_LINT_VERSION} \
   && curl -o /usr/local/bin/shellcheck -sSL https://shellcheck.storage.googleapis.com/shellcheck-${SHELLCHECK_VERSION}.linux-x86_64 \
   && chmod +x /usr/local/bin/shellcheck \
-  && go get -u mvdan.cc/sh/cmd/shfmt \
-  && git -C "$GOPATH/src/mvdan.cc/sh" checkout -q "v$SHFMT_VERSION" \
-  && go install -a -ldflags '-extldflags "-static"' mvdan.cc/sh/cmd/shfmt \
-  && pip install --disable-pip-version-check --no-cache-dir azure-cli==${AZCLI_VERSION} shyaml \
-  && apt-get purge --auto-remove -y libffi-dev python-dev python-pip \
+  && curl -o /usr/local/bin/shfmt -sSL https://github.com/mvdan/sh/releases/download/v{SHFMT_VERSION}/shfmt_v{SHFMT_VERSION}_linux_amd64 \
+  && chmod +x /usr/local/bin/shfmt \
+  && pip3 install --disable-pip-version-check --no-cache-dir azure-cli==${AZCLI_VERSION} shyaml \
+  && apt-get purge --auto-remove -y libffi-dev python3-dev python3-pip \
   && apt-get autoremove -y \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/man /usr/share/doc ${GOPATH}/pkg/* ${GOPATH}/src/* /root/cache /root/.cache \
