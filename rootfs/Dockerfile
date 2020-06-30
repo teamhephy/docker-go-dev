@@ -3,18 +3,18 @@ FROM ubuntu:18.04
 LABEL name="deis-go-dev" \
       maintainer="Matt Boersma <matt.boersma@microsoft.com>"
 
-ENV AZCLI_VERSION=2.3.1 \
+ENV AZCLI_VERSION=2.5.1 \
     DOCKER_VERSION=19.03.4 \
-    GO_VERSION=1.14.2 \
+    GO_VERSION=1.14.3 \
     GLIDE_VERSION=v0.13.3 \
     GLIDE_HOME=/root \
     HELM_VERSION=v2.16.3 \
     KUBECTL_VERSION=v1.16.3 \
     ETCDCTL_VERSION=v3.1.8 \
-    GOLANGCI_LINT_VERSION=v1.24.0 \
+    GOLANGCI_LINT_VERSION=v1.27.0 \
     PROTOBUF_VERSION=3.7.0 \
-    SHELLCHECK_VERSION=v0.7.0 \
-    SHFMT_VERSION=3.1.0 \
+    SHELLCHECK_VERSION=v0.7.1 \
+    SHFMT_VERSION=3.1.1 \
     PATH=$PATH:/usr/local/go/bin:/go/bin:/usr/local/bin/docker \
     GOPATH=/go
 
@@ -103,12 +103,12 @@ RUN \
   && ln -s ${GOPATH}/bin/gometalinter.v2 ${GOPATH}/bin/gometalinter \
   && gometalinter.v2 --install \
   && curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b ${GOPATH}/bin ${GOLANGCI_LINT_VERSION} \
-  && curl -o /usr/local/bin/shellcheck -sSL https://shellcheck.storage.googleapis.com/shellcheck-${SHELLCHECK_VERSION}.linux-x86_64 \
-  && chmod +x /usr/local/bin/shellcheck \
+  && curl -sSL https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz \
+    | tar -vxJ -C /usr/local/bin --strip=1 \
   && curl -o /usr/local/bin/shfmt -sSL https://github.com/mvdan/sh/releases/download/v{SHFMT_VERSION}/shfmt_v{SHFMT_VERSION}_linux_amd64 \
   && chmod +x /usr/local/bin/shfmt \
   && pip3 install --disable-pip-version-check --no-cache-dir azure-cli==${AZCLI_VERSION} shyaml \
-  && apt-get purge --auto-remove -y libffi-dev python3-dev python3-pip \
+  && apt-get purge --auto-remove -y libffi-dev python3-dev \
   && apt-get autoremove -y \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/man /usr/share/doc ${GOPATH}/pkg/* ${GOPATH}/src/* /root/cache /root/.cache \
