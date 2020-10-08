@@ -3,18 +3,18 @@ FROM ubuntu:18.04
 LABEL name="deis-go-dev" \
       maintainer="Matt Boersma <matt.boersma@microsoft.com>"
 
-ENV AZCLI_VERSION=2.5.1 \
+ENV AZCLI_VERSION=2.12.1 \
     DOCKER_VERSION=19.03.4 \
-    GO_VERSION=1.14.3 \
+    GO_VERSION=1.15.2 \
     GLIDE_VERSION=v0.13.3 \
     GLIDE_HOME=/root \
-    HELM_VERSION=v2.16.3 \
+    HELM_VERSION=v2.16.12 \
     KUBECTL_VERSION=v1.16.3 \
     ETCDCTL_VERSION=v3.1.8 \
-    GOLANGCI_LINT_VERSION=v1.27.0 \
+    GOLANGCI_LINT_VERSION=v1.31.0 \
     PROTOBUF_VERSION=3.7.0 \
     SHELLCHECK_VERSION=v0.7.1 \
-    SHFMT_VERSION=3.1.1 \
+    SHFMT_VERSION=3.1.2 \
     PATH=$PATH:/usr/local/go/bin:/go/bin:/usr/local/bin/docker \
     GOPATH=/go
 
@@ -61,7 +61,7 @@ RUN \
     wget \
     yq \
     zip \
-  && curl -L https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz | tar -C /usr/local -xz \
+  && curl -L https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar -C /usr/local -xz \
   && curl -sSL https://github.com/Masterminds/glide/releases/download/${GLIDE_VERSION}/glide-${GLIDE_VERSION}-linux-amd64.tar.gz \
     | tar -vxz -C /usr/local/bin --strip=1 \
   && curl -sSL -o /tmp/protoc.zip https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip \
