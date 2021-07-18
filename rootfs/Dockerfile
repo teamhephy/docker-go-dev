@@ -3,18 +3,22 @@ FROM ubuntu:18.04
 LABEL name="deis-go-dev" \
       maintainer="Matt Boersma <matt.boersma@microsoft.com>"
 
-ENV AZCLI_VERSION=2.12.1 \
-    DOCKER_VERSION=19.03.4 \
-    GO_VERSION=1.15.2 \
-    GLIDE_VERSION=v0.13.3 \
-    GLIDE_HOME=/root \
-    HELM_VERSION=v2.16.12 \
-    KUBECTL_VERSION=v1.16.3 \
+ENV ANSIBLE_VERSION=2.10.9 \
+    AZCLI_VERSION=2.26.1 \
+    DOCKER_VERSION=20.10.2 \
     ETCDCTL_VERSION=v3.1.8 \
-    GOLANGCI_LINT_VERSION=v1.31.0 \
+    GO_VERSION=1.16.6 \
+    GOLANGCI_LINT_VERSION=v1.41.1 \
+    GOSS_VERSION=v0.3.16 \
+    HELM_VERSION=3.6.2 \
+    KUBECTL_VERSION=v1.21.3 \
+    PACKER_VERSION=1.7.3 \
     PROTOBUF_VERSION=3.7.0 \
-    SHELLCHECK_VERSION=v0.7.1 \
-    SHFMT_VERSION=3.1.2 \
+    PYJWT_VERSION=2.1.0 \
+    PYWINRM_VERSION=0.4.1 \
+    SHELLCHECK_VERSION=v0.7.2 \
+    SHFMT_VERSION=3.3.0 \
+    UPX_VERSION=3.96 \
     PATH=$PATH:/usr/local/go/bin:/go/bin:/usr/local/bin/docker \
     GOPATH=/go
 
@@ -26,11 +30,9 @@ RUN \
   apt-get update && \
   apt-get install -y software-properties-common && \
   add-apt-repository ppa:rmescandon/yq && \
-  apt-add-repository --yes --update ppa:ansible/ansible && \
   apt-get update && \
   apt-get upgrade -y --no-install-recommends && \
   apt-get install -y --no-install-recommends \
-    ansible \
     bash \
     build-essential \
     ca-certificates \
@@ -54,7 +56,6 @@ RUN \
     rsync \
     ruby \
     unzip \
-    upx \
     util-linux \
     vim \
     wamerican \
@@ -62,18 +63,16 @@ RUN \
     yq \
     zip \
   && curl -L https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar -C /usr/local -xz \
-  && curl -sSL https://github.com/Masterminds/glide/releases/download/${GLIDE_VERSION}/glide-${GLIDE_VERSION}-linux-amd64.tar.gz \
-    | tar -vxz -C /usr/local/bin --strip=1 \
   && curl -sSL -o /tmp/protoc.zip https://github.com/google/protobuf/releases/download/v${PROTOBUF_VERSION}/protoc-${PROTOBUF_VERSION}-linux-x86_64.zip \
   && unzip /tmp/protoc.zip 'bin/protoc' -d /usr/local \
   && rm /tmp/protoc.zip \
   && curl -sSL https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
   && chmod +x /usr/local/bin/kubectl \
   && mkdir -p ${GOPATH}/src/k8s.io/helm \
-  && curl -sSL https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz \
-    | tar -vxz -C /usr/local/bin --strip=1 \
+  && curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 \
+  && chmod 700 get_helm.sh && ./get_helm.sh --version v${HELM_VERSION} \
+  && rm ./get_helm.sh \
   && mkdir -p /go/bin \
-  && curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh \
   && curl -sSL https://aka.ms/downloadazcopy-v10-linux | tar -vxz -C /usr/local/bin --strip=1 \
   && mv /usr/local/bin/azcopy /usr/local/bin/azcopy-preview \
   && curl -sSL https://aka.ms/downloadazcopylinux64 | tar -vxz -C /tmp \
@@ -90,24 +89,30 @@ RUN \
   && go get -u -v \
     github.com/AlekSi/gocov-xml \
     github.com/axw/gocov/gocov \
-    github.com/constabulary/gb/... \
-    github.com/derekparker/delve/cmd/dlv \
+    github.com/go-delve/delve/cmd/dlv \
     github.com/dgrijalva/jwt-go/cmd/jwt \
     github.com/golang/protobuf/protoc-gen-go \
     github.com/haya14busa/goverage \
     github.com/jteeuwen/go-bindata/... \
     github.com/mitchellh/gox \
     github.com/onsi/ginkgo/ginkgo \
-    github.com/hashicorp/packer \
-    gopkg.in/alecthomas/gometalinter.v2 \
-  && ln -s ${GOPATH}/bin/gometalinter.v2 ${GOPATH}/bin/gometalinter \
-  && gometalinter.v2 --install \
   && curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b ${GOPATH}/bin ${GOLANGCI_LINT_VERSION} \
   && curl -sSL https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz \
     | tar -vxJ -C /usr/local/bin --strip=1 \
+  && curl -sSL https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip -o /tmp/packer.zip \
+    && unzip /tmp/packer.zip -d /usr/local/bin \
   && curl -o /usr/local/bin/shfmt -sSL https://github.com/mvdan/sh/releases/download/v{SHFMT_VERSION}/shfmt_v{SHFMT_VERSION}_linux_amd64 \
   && chmod +x /usr/local/bin/shfmt \
-  && pip3 install --disable-pip-version-check --no-cache-dir azure-cli==${AZCLI_VERSION} shyaml \
+  && curl -L "https://github.com/aelsabbahy/goss/releases/download/${GOSS_VERSION}/goss-linux-amd64" -o /usr/local/bin/goss \
+  && chmod +rx /usr/local/bin/goss \
+  && curl -L "https://github.com/aelsabbahy/goss/releases/download/${GOSS_VERSION}/dgoss" -o /usr/local/bin/dgoss \
+  && chmod +rx /usr/local/bin/dgoss \
+  && curl -sSL -o /tmp/upx.tar.xz https://github.com/upx/upx/releases/download/v${UPX_VERSION}/upx-${UPX_VERSION}-amd64_linux.tar.xz \
+  && tar -xvf /tmp/upx.tar.xz -C /tmp \
+  && mv /tmp/upx-${UPX_VERSION}-amd64_linux/upx /usr/local/bin/upx \
+  && pip3 install --disable-pip-version-check --no-cache-dir --upgrade pip \
+  && pip3 install --disable-pip-version-check --no-cache-dir azure-cli==${AZCLI_VERSION} PyJWT==${PYJWT_VERSION} shyaml ansible-base==${ANSIBLE_VERSION} pywinrm==${PYWINRM_VERSION} \
+  && ansible-galaxy collection install ansible.windows \
   && apt-get purge --auto-remove -y libffi-dev python3-dev \
   && apt-get autoremove -y \
   && apt-get clean -y \
