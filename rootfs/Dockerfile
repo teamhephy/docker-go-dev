@@ -1,21 +1,16 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
-LABEL name="deis-go-dev" \
-      maintainer="Matt Boersma <matt.boersma@microsoft.com>"
+LABEL name="hephy-go-dev" \
+      maintainer="Team Hephy <team@teamhephy.com>"
 
-ENV ANSIBLE_VERSION=2.10.9 \
-    AZCLI_VERSION=2.26.1 \
-    DOCKER_VERSION=20.10.2 \
+ENV DOCKER_VERSION=20.10.2 \
     ETCDCTL_VERSION=v3.1.8 \
     GO_VERSION=1.16.6 \
     GOLANGCI_LINT_VERSION=v1.41.1 \
     GOSS_VERSION=v0.3.16 \
     HELM_VERSION=3.6.2 \
     KUBECTL_VERSION=v1.21.3 \
-    PACKER_VERSION=1.7.3 \
     PROTOBUF_VERSION=3.7.0 \
-    PYJWT_VERSION=2.1.0 \
-    PYWINRM_VERSION=0.4.1 \
     SHELLCHECK_VERSION=v0.7.2 \
     SHFMT_VERSION=3.3.0 \
     UPX_VERSION=3.96 \
@@ -40,7 +35,7 @@ RUN \
     git-core \
     jq \
     libffi-dev \
-    libicu60 \
+    libc6 \
     libssl-dev \
     libunwind8 \
     man \
@@ -73,10 +68,6 @@ RUN \
   && chmod 700 get_helm.sh && ./get_helm.sh --version v${HELM_VERSION} \
   && rm ./get_helm.sh \
   && mkdir -p /go/bin \
-  && curl -sSL https://aka.ms/downloadazcopy-v10-linux | tar -vxz -C /usr/local/bin --strip=1 \
-  && mv /usr/local/bin/azcopy /usr/local/bin/azcopy-preview \
-  && curl -sSL https://aka.ms/downloadazcopylinux64 | tar -vxz -C /tmp \
-  && /tmp/install.sh \
   && apt-get update && apt-get -f -y install \
   && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz \
   && tar xzvf docker-${DOCKER_VERSION}.tgz -C /usr/local/bin \
@@ -99,8 +90,6 @@ RUN \
   && curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b ${GOPATH}/bin ${GOLANGCI_LINT_VERSION} \
   && curl -sSL https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz \
     | tar -vxJ -C /usr/local/bin --strip=1 \
-  && curl -sSL https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip -o /tmp/packer.zip \
-    && unzip /tmp/packer.zip -d /usr/local/bin \
   && curl -o /usr/local/bin/shfmt -sSL https://github.com/mvdan/sh/releases/download/v{SHFMT_VERSION}/shfmt_v{SHFMT_VERSION}_linux_amd64 \
   && chmod +x /usr/local/bin/shfmt \
   && curl -L "https://github.com/aelsabbahy/goss/releases/download/${GOSS_VERSION}/goss-linux-amd64" -o /usr/local/bin/goss \
@@ -111,8 +100,6 @@ RUN \
   && tar -xvf /tmp/upx.tar.xz -C /tmp \
   && mv /tmp/upx-${UPX_VERSION}-amd64_linux/upx /usr/local/bin/upx \
   && pip3 install --disable-pip-version-check --no-cache-dir --upgrade pip \
-  && pip3 install --disable-pip-version-check --no-cache-dir azure-cli==${AZCLI_VERSION} PyJWT==${PYJWT_VERSION} shyaml ansible-base==${ANSIBLE_VERSION} pywinrm==${PYWINRM_VERSION} \
-  && ansible-galaxy collection install ansible.windows \
   && apt-get purge --auto-remove -y libffi-dev python3-dev \
   && apt-get autoremove -y \
   && apt-get clean -y \

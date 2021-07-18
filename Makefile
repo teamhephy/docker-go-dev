@@ -1,6 +1,6 @@
 VERSION ?= $(shell git describe --tags --exact-match 2>/dev/null || echo latest)
-REGISTRY ?= quay.io/
-IMAGE_PREFIX ?= deis
+REGISTRY ?= docker.io/
+IMAGE_PREFIX ?= hephy
 IMAGE := ${REGISTRY}${IMAGE_PREFIX}/go-dev:${VERSION}
 
 # scripts are checked *after* build, so use paths inside the container
